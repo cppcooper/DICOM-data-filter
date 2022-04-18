@@ -1,31 +1,22 @@
-# Orthanc-TMI
+# data anonymizer
+This software has been developed as a plugin to run on Orthanc DICOM servers. This repo builds a plugin for orthanc 1.9.7. You can obtain a newer version by [downloading OrthancCPlugin.h](https://book.orthanc-server.com/developers/creating-plugins.html#structure-of-the-plugins) from that link or by downloading it via automation.
 
 ### Table of Contents
- - [Getting Started](#getting-started)
-   - [Clone](#clone)
-     - [Dependencies](#dependencies)
-       - [Submodules](#submodules)
-   - [Building](#building)
-     - [Tools](#tools)
-     - [Build](#build)
-     - [Install](#install)
-   - [Docker](#docker)
-     - [Build Image](#build-image)
-     - [WSL](#windows-subsystem-for-linux)
- - [Contributing](#contributing)
-   - [Style Guide](#style-guide)
-   - [Special Branches](#special-branches)
-   - [Branching](#branching)
- - [Testing](#testing)
+ - [Installing](#installing)
+   - [clone](#clone)
+     - [external](#submodules)
+   - [build](#build)
+   - [install](#install)
+   - [docker](#docker)
  - [Configuration](#plugin-configuration-json)
    - [Hard Links](#hard-links)
    - [Date Truncation](#date-truncation)
    - [Filter](#filter---removing-dicom-elements)
 
-This software has been developed as a plugin to run on Orthanc DICOM servers.
-## Getting Started
+
+## Installing
 ### Clone
-Don't forget to populate submodules.
+You need to build from source, unless someone makes a package for your package manager. You'll need to use your package manager to install your package for libpq - the postrgres client API.
 
 <details>
 
@@ -41,17 +32,12 @@ git submodule update
 ```
 
 </details>
-
-#### Dependencies
-
-<details>
-
-First and foremost this project [creates an Orthanc plugin](https://book.orthanc-server.com/developers/creating-plugins.html#structure-of-the-plugins), so the Orthanc [plugin SDK](https://sdk.orthanc-server.com/index.html) is required. Which is available as [OrthancCPlugin.h](https://hg.orthanc-server.com/orthanc/file/Orthanc-1.9.7/OrthancServer/Plugins/Include/orthanc/OrthancCPlugin.h)
-
-This repo has a copy of that file under [include/orthanc/](include/orthanc/)
+Don't forget to populate submodules.
 
 ##### Submodules
+<details>
 The submodules you need to initialize.
+ 
 | Library | Purpose | URI |
 |---------|---------|-----|
 | [libpqxx](lib) | libpq wrapper | <ul><li>[external repo](https://github.com/jtv/libpqxx.git) <li>[docs - API](https://libpqxx.readthedocs.io/en/stable/a01382.html) |
@@ -60,48 +46,26 @@ The submodules you need to initialize.
 
 </details>
 
-### Building
-The project is configured to build a plugin (dll/so) (target `'data-anonymizer'`) binary, then copy it to `docker/plugins` where the orthanc docker server can read it.
-
-#### Tools
-Some tools will be needed. Please refer to your system package manager, or each tool's website, in order to install.
+### Build
+ 
+The project is configured to build a plugin (dll/so) (target `'data-anonymizer'`) binary, then copy it to `docker/plugins` for development use (testing).
 
 <details>
-
-* GCC - compiler
-* Cmake compatible build system (eg. GNU Make, Ninja)
-* Cmake 3.20 - configures build system
-* Docker - local testing ([docker image](https://hub.docker.com/r/jodogne/orthanc-plugins))
-* Github Actions - remote testing
-* CLion (recommended)
-
-</details>
-
-#### Build
-You'll need some tools, but below is all you'll need to do to build everything.
-```bash
-mkdir build
-cd build
-# configure build
-# on linux
-cmake ..
-# on windows, pretty sure they've got VS as the default
-cmake .. -G "Unix Makefiles"
-
-# perform build
-make
-```
-or if you're a cool ninja
-```bash
-mkdir build
-cd build
-cmake .. -G Ninja
-ninja
-```
  
-#### Install
+ To build and test the plugin. To [configure](#plugin-configuration-json)
+ 
+```shell
+$ cmake .. -G Ninja -B build
+$ ninja -C build
+$ sudo docker-compose up
+```
+ From there you just interact via the [adminer page](https://book.orthanc-server.com/users/docker.html#id3), that is [http://localhost:8042/](http://localhost:8042/).
+ </details>
+ 
+### Install
+ 
 We don't currently provide binaries, so you'll have to build and install yourself. We can't guarantee your plugin directory will be in this location, so verify its location for yourself and update the install prefix as needed.
-```bash
+```shell
 $ mkdir build
 $ cd build
 $ cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=/usr/share/orthanc/plugins
@@ -144,113 +108,7 @@ You can edit `docker-compose.yml` where..
 
 </details>
 
-## Contributing
-
-<details>
-
-### Style Guide
-The C++ auto style settings can be found in CLion at `Settings -> Editor -> Code Style -> C++`, here you can import our styles from `c++styles.xml` in the project root.
-
-Short and simple example of naming conventions and other formats to adhere to in order to maintain consistency.
-```cpp
-#include <iostream>
-
-#define MY_MACRO auto x = [](){Foo();};
-
-int main(){
-    int foo_total_count = 0; 
-    std::cout << ++foo_total_count;
-}
-
-class FooBar{ //Our classes should be PascalCase, unless implemented inside another class or inside a cpp file
-    struct data_type{
-        int example_of;
-        int private_inner_class;
-    };
-    struct Data{ //no convention, up to preference for these
-        int example_of; //these still gotta be underscore_case
-        int private_inner_class;
-    };
-public: //variable order really only matters in terms of what is logical and or if you need memory structured a particular way
-    int special_public_var_packed_at_the_front_of_object = 42;
-private:
-    //members
-    int foo_total_count = 0;
-    
-    //methods
-    void foo(){}
-    //hard wrap at col 120
-    //this can be negotiated if someone can't fit 120+ chars in their clion views (font change? proggyfonts.net/)
-    //it also doesn't apply to comments, use your best judgement for comments
-    void helper(std::unordered_map<size_t, std::vector<std::vector<iterator_type_with_a_long_name>> the_thing, int x){}
-    void helper2(std::unordered_map<size_t, std::vector<std::vector<iterator_type_with_a_long_name>> the_thing,
-                 std::unordered_map<size_t, std::vector<std::vector<iterator_type_with_a_long_name>> the_thing2){}
-    void helper3(int x, /* when the signature surpasses, newline each arg */
-                 int y,
-                 int z,
-                 std::unordered_map<size_t, std::vector<std::vector<size_t>> the_thing, 
-                 std::unordered_map<size_t, std::vector<std::vector<iterator_type_with_a_long_name>> the_thing2){}
-protected:
-    void protected_special_helper(){}
-public:
-    bool public_flag = false;
-    //Our methods should also be PascalCase, might revisit this later and switch to Camel
-    void Bar(){}
-};
-
-//Our functions should also be PascalCase, might revisit this later and switch to Camel
-void Foo(int foo_bar){
-}
-```
-
-</details>
-
-### Special Branches
-
-<details>
-
-| Name | Purpose |
-|------|---------|
-| master | stable branch |
-| develop | development branch for **merging** new libraries/features/etc. |
-| documents | documentation branch for independent clerical work |
-| libraries | library integration branch for getting new libraries up and running |
-| ci | continuous integration branch for independent updating of ci configs |
-| samples | for independent updating of dicom files, should be converted into a submodule |
-
-</details>
-
-### Branching
-
-<details>
-
-Our strategy is simple: 
- 1. develop code in a branch
-    - test
-    - fix
-    - test
- 2. merge to * *(if and when needed)*
- 3. merge to develop
-      - test
-      - fix
-      - test
- 4. merge to master.
-
-As a general guide to naming branches:
-
-| Prefix | Purpose | Delete After? |
-|--------|---------|----------|
-| `feat-` | feature development | ok |
-| `refactor-` | refactoring existing systems | no |
-| `user-patch-` | fixes from github | no |
-| `hotfix-` | single commit fixes | no |
-| `patch-` | fixes for tracked issues | no |
-| `fix-` | other fixes | no |
-| `*` | some special branch with an ongoing purpose | no |
-
-</details>
-
-# Plugin Configuration (json)
+## Plugin Configuration (json)
 To configure this plugin you'll need to add a section to your json file with the key `"DataAnon" : {}` under this section different parts of the plugin can be configured. Here is an empty configuration showing the different sections. ***These are the parts of the configuration that must be present. If missing Orthanc will fail to start.***
 ```json
   "DataAnon": {
@@ -267,7 +125,7 @@ To configure this plugin you'll need to add a section to your json file with the
   ```
 **note:  changing the configuration does not (currently) affect existing DICOM files that have already been received and processed by the server.**
 
-# Hard Links
+## Hard Links
 Hard links are a special type of file on a filesystem that allow you to alias another file such that even if you rename the underlying file the hard link will still point to that file. In fact you could delete the underlying file and the hard link will take its place so to speak, which is to say the data is not lost because there is still a file referencing that spot on the storage medium. **note: not all filesystem types support hard links (eg. FAT32)**
 
 For users of this data anonymization plugin, hard links allow us to provide a way to conveniently customize how data is organized on the filesystem. Hard links can be configured in the json using a `"/folder-name/" : "group,element"` pair.
@@ -286,7 +144,7 @@ You can add multiple hardlinks by separating them by commas. The directory you u
 ### Hash Bins
 You may have more files than your file system is willing to manage under a particular group (eg. `by-dob/19880404/`) and so you can enable the use of hash bins which will use the first two characters of the DICOM file's name as part of the path. eg. `by-dob/19880404/4A/`; the file names are `uuid.DCM` where uuid is the file's rather long uuid. To enable or disable this feature you would set the `"HardlinksUseHashBins"` field accordingly (ie. `true` or `false`).
 
-# Date Truncation
+## Date Truncation
 You may want to keep dates, but also anonymize them to a certain degree which you can accomplish via the date truncation feature. You can configure different dates to be truncated differently even. The date truncation code will take the configuration and simply mask the date with it.
 **For example:**
 ```
@@ -313,7 +171,7 @@ Say you want all dates to be truncated by month, except date of birth which you 
 1. **note: you can add a different mask for each and every type of date you can find in a DICOM file just add the appropriate tag (group,element) and the mask you want for each.**
 2. **note: specific dates configured for truncation will be automatically be added to the Filter whitelist (inside the plugin, not the json).**
 
-# Filter - Removing Dicom Elements
+## Filter - Removing Dicom Elements
 If you want to completely remove data, you can use the `"Filter" : { "blacklist" : [] }` section to achieve it.
 
 ### Blacklist

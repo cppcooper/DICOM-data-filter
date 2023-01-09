@@ -1,5 +1,5 @@
 # data anonymizer
-This software has been developed as a plugin to run on Orthanc DICOM servers. This repo builds a plugin for orthanc 1.9.7. You can obtain a newer version by [downloading OrthancCPlugin.h](https://book.orthanc-server.com/developers/creating-plugins.html#structure-of-the-plugins) from that link or by downloading it via automation.
+This software has been developed as a plugin to run on Orthanc DICOM servers. This repo builds a plugin for orthanc 1.9.7. You are welcome to attempt building for newer versions by replacing [downloading OrthancCPlugin.h](https://book.orthanc-server.com/developers/creating-plugins.html#structure-of-the-plugins).
 
 ### Table of Contents
  - [Installing](#installing)

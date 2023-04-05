@@ -22,7 +22,7 @@ You need to build from source, unless someone makes a package for your package m
 
 ```bash
 # clone repo
-git clone https://github.com/BCCF-UBCO-AD/Orthanc-TMI.git orthanc-tmi
+git clone https://github.com/cppcooper/DICOM-data-filter.git orthanc-filter
 cd orthanc-tmi
 # develop is where all the action is
 git checkout develop

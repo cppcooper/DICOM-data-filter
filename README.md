@@ -1,3 +1,5 @@
+Email me if you need help.
+
 # DICOM Data Filter
 This software has been developed as a plugin to run on Orthanc DICOM servers. This repo builds a plugin for orthanc 1.9.7. You are welcome to attempt building for newer versions by replacing [OrthancCPlugin.h](https://book.orthanc-server.com/developers/creating-plugins.html#structure-of-the-plugins) under `include/orthanc/`.
 
